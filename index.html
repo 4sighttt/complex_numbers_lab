@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>복소수 인터랙티브 실험실</title>
+<style>
+  :root{
+    --bg:#0f1221;
+    --panel:#171b31;
+    --panel2:#1d2240;
+    --text:#eef2ff;
+    --muted:#aab3d8;
+    --accent:#7aa2ff;
+    --accent2:#8ef0c9;
+    --danger:#ff9b9b;
+    --grid:#2a3157;
+    --axis:#c9d4ff;
+    --line:#5f73c9;
+    --good:#b4ffb4;
+    --shadow: 0 10px 30px rgba(0,0,0,.28);
+    --radius: 18px;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;
+    background:linear-gradient(180deg, #0d1020, #11162b 40%, #0c1020);
+    color:var(--text);
+    font-family: "Pretendard", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
+  }
+  .wrap{
+    max-width: 1320px;
+    margin: 0 auto;
+    padding: 18px;
+  }
+  .header{
+    display:flex;
+    gap:16px;
+    align-items:flex-start;
+    justify-content:space-between;
+    flex-wrap:wrap;
+    margin-bottom:16px;
+  }
+  .titlebox{
+    background:rgba(255,255,255,.03);
+    border:1px solid rgba(255,255,255,.08);
+    border-radius:var(--radius);
+    padding:18px 20px;
+    box-shadow:var(--shadow);
+    flex:1 1 520px;
+  }
+  h1{
+    margin:0 0 8px 0;
+    font-size:clamp(1.4rem, 2vw, 2rem);
+  }
+  .subtitle{
+    color:var(--muted);
+    line-height:1.55;
+    margin:0;
+  }
+  .modes{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    margin-top:14px;
+  }
+  .mode-btn{
+    border:none;
+    border-radius:999px;
+    background:var(--panel2);
+    color:var(--text);
+    padding:10px 14px;
+    cursor:pointer;
+    transition:.18s ease;
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,.08);
+  }
+  .mode-btn:hover{transform:translateY(-1px)}
+  .mode-btn.active{
+    background:linear-gradient(180deg, #7aa2ff, #628cff);
+    color:#081228;
+    font-weight:700;
+  }
+  .legend{
+    min-width:250px;
+    background:rgba(255,255,255,.03);
+    border:1px solid rgba(255,255,255,.08);
+    border-radius:var(--radius);
+    padding:16px 18px;
+    box-shadow:var(--shadow);
+  }
+  .legend h2{
+    margin:0 0 10px;
+    font-size:1rem;
+  }
+  .legend small{
+    color:var(--muted);
+    line-height:1.5;
+    display:block;
+  }
+  .main{
+    display:grid;
+    grid-template-columns: minmax(320px, 1.45fr) minmax(290px, .8fr);
+    gap:16px;
+  }
+  @media (max-width: 980px){
+    .main{grid-template-columns:1fr}
+  }
+  .card{
+    background:rgba(255,255,255,.03);
+    border:1px solid rgba(255,255,255,.08);
+    border-radius:var(--radius);
+    box-shadow:var(--shadow);
+  }
+  .canvas-card{
+    padding:14px;
+  }
+  .canvas-top{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    margin-bottom:12px;
+    flex-wrap:wrap;
+  }
+  .canvas-meta{
+    color:var(--muted);
+    font-size:.95rem;
+  }
+  canvas{
+    width:100%;
+    height:auto;
+    display:block;
+    background:
+      radial-gradient(circle at 20% 20%, rgba(122,162,255,.08), transparent 28%),
+      radial-gradient(circle at 80% 70%, rgba(142,240,201,.06), transparent 24%),
+      linear-gradient(180deg, #121731, #0d1226);
+    border-radius:16px;
+    border:1px solid rgba(255,255,255,.08);
+  }
+  .panel{
+    padding:14px;
+    display:flex;
+    flex-direction:column;
+    gap:14px;
+  }
+  .section{
+    background:rgba(255,255,255,.03);
+    border:1px solid rgba(255,255,255,.06);
+    border-radius:16px;
+    padding:14px;
+  }
+  .section h3{
+    margin:0 0 12px 0;
+    font-size:1rem;
+  }
+  .row{
+    display:grid;
+    grid-template-columns: 1fr auto;
+    gap:10px;
+    align-items:center;
+    margin-bottom:10px;
+  }
+  .row label{color:var(--muted)}
+  .value{
+    min-width:64px;
+    text-align:right;
+    font-variant-numeric:tabular-nums;
+    color:var(--accent2);
+    font-weight:700;
+  }
+  input[type=range]{
+    width:100%;
+    accent-color: var(--accent);
+  }
+  .btnrow{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+  }
+  button.action{
+    border:none;
+    border-radius:12px;
+    background:var(--panel2);
+    color:var(--text);
+    padding:10px 12px;
+    cursor:pointer;
+    transition:.18s ease;
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,.08);
+  }
+  button.action:hover{transform:translateY(-1px)}
+  button.primary{
+    background:linear-gradient(180deg, #8ef0c9, #5cddb0);
+    color:#062116;
+    font-weight:800;
+  }
+  button.warn{
+    background:linear-gradient(180deg, #ffb4b4, #ff9292);
+    color:#2a0808;
+    font-weight:800;
+  }
+  .resultbox{
+    background:#0f1530;
+    border:1px solid rgba(255,255,255,.08);
+    border-radius:14px;
+    padding:12px;
+    line-height:1.7;
+    font-variant-numeric:tabular-nums;
+  }
+  .resultbox strong{color:var(--accent2)}
+  .formula{
+    font-size:1.02rem;
+    line-height:1.8;
+  }
+  .hint{
+    color:var(--muted);
+    font-size:.92rem;
+    line-height:1.55;
+    margin-top:8px;
+  }
+  .explain{
+    margin-top:16px;
+    padding:18px;
+  }
+  .explain h2{
+    margin:0 0 10px;
+    font-size:1.08rem;
+  }
+  .explain p{
+    margin:0;
+    line-height:1.7;
+    color:#eef1ff;
+  }
+  .small-grid{
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    gap:10px;
+  }
+  @media (max-width: 520px){
+    .small-grid{grid-template-columns:1fr}
+  }
+  .tag{
+    display:inline-block;
+    padding:4px 9px;
+    border-radius:999px;
+    background:rgba(122,162,255,.12);
+    color:#d6e2ff;
+    font-size:.8rem;
+    margin-bottom:10px;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header">
+    <div class="titlebox">
+      <h1>복소수 인터랙티브 실험실</h1>
+      <p class="subtitle">복소수를 공식 덩어리로 보지 않고, <strong>점</strong>, <strong>이동</strong>, <strong>대칭</strong>, <strong>회전</strong>, <strong>거리</strong>로 체험하는 단일 HTML 도구입니다.</p>
+      <div class="modes" id="modeButtons"></div>
+    </div>
+    <div class="legend">
+      <h2>빠른 감각 잡기</h2>
+      <small>
+        가로축은 실수축, 세로축은 허수축입니다.<br>
+        <strong>a+bi</strong> 는 복소평면에서 <strong>(a,b)</strong> 에 해당합니다.<br>
+        덧셈은 좌표의 합, 켤레복소수는 x축 대칭, 절댓값은 원점에서의 거리입니다.
+      </small>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="card canvas-card">
+      <div class="canvas-top">
+        <div>
+          <div class="tag" id="modeTag">모드</div>
+          <div class="canvas-meta" id="canvasMeta">현재 상태</div>
+        </div>
+        <div class="canvas-meta">표시 범위: 실수/허수축 -10 ~ 10</div>
+      </div>
+      <canvas id="plane" width="860" height="620" aria-label="복소평면"></canvas>
+    </div>
+
+    <div class="card panel">
+      <div class="section">
+        <h3>기본 설정</h3>
+        <div class="small-grid">
+          <div>
+            <div class="row">
+              <label for="a1">z₁의 실수부 a₁</label>
+              <div class="value" id="a1v">2</div>
+            </div>
+            <input type="range" id="a1" min="-10" max="10" step="1" value="2">
+          </div>
+          <div>
+            <div class="row">
+              <label for="b1">z₁의 허수부 b₁</label>
+              <div class="value" id="b1v">3</div>
+            </div>
+            <input type="range" id="b1" min="-10" max="10" step="1" value="3">
+          </div>
+        </div>
+        <div class="small-grid" id="z2Block">
+          <div>
+            <div class="row">
+              <label for="a2">z₂의 실수부 a₂</label>
+              <div class="value" id="a2v">1</div>
+            </div>
+            <input type="range" id="a2" min="-10" max="10" step="1" value="1">
+          </div>
+          <div>
+            <div class="row">
+              <label for="b2">z₂의 허수부 b₂</label>
+              <div class="value" id="b2v">2</div>
+            </div>
+            <input type="range" id="b2" min="-10" max="10" step="1" value="2">
+          </div>
+        </div>
+        <div class="hint">모드에 따라 z₂가 사용되지 않을 수 있습니다.</div>
+      </div>
+
+      <div class="section">
+        <h3>동작</h3>
+        <div class="btnrow">
+          <button class="action primary" id="applyBtn">현재 모드 적용</button>
+          <button class="action" id="rotateBtn">i 곱하기</button>
+          <button class="action warn" id="resetBtn">초기값 복원</button>
+        </div>
+        <div class="hint">“i 곱하기”는 현재 z₁에만 적용되며, 90도 반시계 회전을 애니메이션으로 보여줍니다.</div>
+      </div>
+
+      <div class="section">
+        <h3>결과</h3>
+        <div class="resultbox formula" id="resultBox"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card explain">
+    <h2>설명</h2>
+    <p id="explanation"></p>
+  </div>
+</div>
+
+<script>
+(() => {
+  const modes = [
+    { id: 'plot', label: '점 찍기' },
+    { id: 'add', label: '덧셈' },
+    { id: 'mul', label: '곱셈' },
+    { id: 'conj', label: '켤레복소수' },
+    { id: 'abs', label: '절댓값' },
+    { id: 'irot', label: 'i 회전' }
+  ];
+
+  const state = {
+    mode: 'plot',
+    z1: { a: 2, b: 3 },
+    z2: { a: 1, b: 2 },
+    rotationAnimating: false,
+    rotationStart: null,
+    rotationFrom: null,
+    rotationTo: null,
+    gridMin: -10,
+    gridMax: 10
+  };
+
+  const els = {
+    canvas: document.getElementById('plane'),
+    ctx: document.getElementById('plane').getContext('2d'),
+    modeButtons: document.getElementById('modeButtons'),
+    modeTag: document.getElementById('modeTag'),
+    canvasMeta: document.getElementById('canvasMeta'),
+    resultBox: document.getElementById('resultBox'),
+    explanation: document.getElementById('explanation'),
+    a1: document.getElementById('a1'),
+    b1: document.getElementById('b1'),
+    a2: document.getElementById('a2'),
+    b2: document.getElementById('b2'),
+    a1v: document.getElementById('a1v'),
+    b1v: document.getElementById('b1v'),
+    a2v: document.getElementById('a2v'),
+    b2v: document.getElementById('b2v'),
+    z2Block: document.getElementById('z2Block'),
+    applyBtn: document.getElementById('applyBtn'),
+    rotateBtn: document.getElementById('rotateBtn'),
+    resetBtn: document.getElementById('resetBtn')
+  };
+
+  function fmtSigned(n) {
+    return n >= 0 ? `+ ${n}` : `- ${Math.abs(n)}`;
+  }
+
+  function fmtComplex(z, omitPlus=false) {
+    const a = roundClean(z.a);
+    const b = roundClean(z.b);
+    if (b === 0) return `${a}`;
+    if (a === 0) return `${b}i`;
+    const sign = b >= 0 ? '+' : '-';
+    return `${a} ${sign} ${Math.abs(b)}i`;
+  }
+
+  function roundClean(n) {
+    const r = Math.round(n * 100) / 100;
+    return Object.is(r, -0) ? 0 : r;
+  }
+
+  function add(z1, z2) {
+    return { a: z1.a + z2.a, b: z1.b + z2.b };
+  }
+
+  function multiply(z1, z2) {
+    return {
+      a: z1.a * z2.a - z1.b * z2.b,
+      b: z1.a * z2.b + z1.b * z2.a
+    };
+  }
+
+  function conjugate(z) {
+    return { a: z.a, b: -z.b };
+  }
+
+  function magnitude(z) {
+    return Math.sqrt(z.a * z.a + z.b * z.b);
+  }
+
+  function multiplyByI(z) {
+    return { a: -z.b, b: z.a };
+  }
+
+  function interp(a, b, t) {
+    return a + (b - a) * t;
+  }
+
+  function toCanvas(x, y) {
+    const pad = 50;
+    const w = els.canvas.width;
+    const h = els.canvas.height;
+    const min = state.gridMin;
+    const max = state.gridMax;
+    const scaleX = (w - pad * 2) / (max - min);
+    const scaleY = (h - pad * 2) / (max - min);
+    return {
+      x: pad + (x - min) * scaleX,
+      y: h - pad - (y - min) * scaleY
+    };
+  }
+
+  function drawPlane() {
+    const ctx = els.ctx;
+    const w = els.canvas.width;
+    const h = els.canvas.height;
+    ctx.clearRect(0, 0, w, h);
+
+    const min = state.gridMin;
+    const max = state.gridMax;
+
+    // grid
+    ctx.lineWidth = 1;
+    ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--grid').trim();
+
+    for (let i = min; i <= max; i++) {
+      const p1 = toCanvas(i, min);
+      const p2 = toCanvas(i, max);
+      ctx.beginPath();
+      ctx.moveTo(p1.x, p1.y);
+      ctx.lineTo(p2.x, p2.y);
+      ctx.stroke();
+
+      const q1 = toCanvas(min, i);
+      const q2 = toCanvas(max, i);
+      ctx.beginPath();
+      ctx.moveTo(q1.x, q1.y);
+      ctx.lineTo(q2.x, q2.y);
+      ctx.stroke();
+    }
+
+    // axes
+    ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--axis').trim();
+    ctx.lineWidth = 2.2;
+    const x1 = toCanvas(min, 0), x2 = toCanvas(max, 0);
+    const y1 = toCanvas(0, min), y2 = toCanvas(0, max);
+
+    ctx.beginPath(); ctx.moveTo(x1.x, x1.y); ctx.lineTo(x2.x, x2.y); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(y1.x, y1.y); ctx.lineTo(y2.x, y2.y); ctx.stroke();
+
+    // axis labels/ticks
+    ctx.fillStyle = "#dfe6ff";
+    ctx.font = "14px sans-serif";
+    for (let i = min; i <= max; i++) {
+      const p = toCanvas(i, 0);
+      const q = toCanvas(0, i);
+      if (i !== 0) {
+        ctx.fillText(String(i), p.x - 5, p.y + 20);
+        ctx.fillText(String(i), q.x + 10, q.y + 5);
+      }
+    }
+    ctx.fillText("실수축", x2.x - 45, x2.y - 12);
+    ctx.fillText("허수축", y2.x + 12, y2.y + 16);
+    ctx.fillText("O", toCanvas(0,0).x + 8, toCanvas(0,0).y - 8);
+  }
+
+  function drawProjection(z, color="#7893ff") {
+    const ctx = els.ctx;
+    const p = toCanvas(z.a, z.b);
+    const px = toCanvas(z.a, 0);
+    const py = toCanvas(0, z.b);
+    ctx.save();
+    ctx.setLineDash([6,6]);
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 1.4;
+    ctx.beginPath();
+    ctx.moveTo(px.x, px.y);
+    ctx.lineTo(p.x, p.y);
+    ctx.lineTo(py.x, py.y);
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  function drawPoint(z, color, label, radius=7) {
+    const ctx = els.ctx;
+    const p = toCanvas(z.a, z.b);
+    drawProjection(z, color);
+    ctx.beginPath();
+    ctx.fillStyle = color;
+    ctx.arc(p.x, p.y, radius, 0, Math.PI*2);
+    ctx.fill();
+
+    ctx.strokeStyle = "rgba(255,255,255,.85)";
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "bold 15px sans-serif";
+    ctx.fillText(label, p.x + 10, p.y - 10);
+    ctx.font = "13px sans-serif";
+    ctx.fillText(`(${roundClean(z.a)}, ${roundClean(z.b)})`, p.x + 10, p.y + 9);
+  }
+
+  function drawLine(z1, z2, color, width=2.3, dashed=false) {
+    const ctx = els.ctx;
+    const p1 = toCanvas(z1.a, z1.b);
+    const p2 = toCanvas(z2.a, z2.b);
+    ctx.save();
+    if (dashed) ctx.setLineDash([7,6]);
+    ctx.strokeStyle = color;
+    ctx.lineWidth = width;
+    ctx.beginPath();
+    ctx.moveTo(p1.x, p1.y);
+    ctx.lineTo(p2.x, p2.y);
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  function drawArrow(from, to, color) {
+    drawLine(from, to, color, 2.4, false);
+    const ctx = els.ctx;
+    const p1 = toCanvas(from.a, from.b);
+    const p2 = toCanvas(to.a, to.b);
+    const angle = Math.atan2(p2.y - p1.y, p2.x - p1.x);
+    const size = 10;
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.moveTo(p2.x, p2.y);
+    ctx.lineTo(p2.x - size * Math.cos(angle - Math.PI/6), p2.y - size * Math.sin(angle - Math.PI/6));
+    ctx.lineTo(p2.x - size * Math.cos(angle + Math.PI/6), p2.y - size * Math.sin(angle + Math.PI/6));
+    ctx.closePath();
+    ctx.fill();
+  }
+
+  function drawOriginTo(z, color) {
+    drawArrow({a:0,b:0}, z, color);
+  }
+
+  function renderResultAndExplanation() {
+    const z1 = {...state.z1};
+    const z2 = {...state.z2};
+    const mode = state.mode;
+
+    els.modeTag.textContent = `모드: ${modes.find(m => m.id === mode).label}`;
+    els.canvasMeta.textContent = `z₁ = ${fmtComplex(z1)} / z₂ = ${fmtComplex(z2)}`;
+
+    if (mode === 'plot') {
+      els.resultBox.innerHTML = `
+        <strong>현재 복소수</strong><br>
+        z = ${fmtComplex(z1)}<br>
+        좌표로 보면 (${roundClean(z1.a)}, ${roundClean(z1.b)})
+      `;
+      els.explanation.textContent =
+        `현재 복소수 z = ${fmtComplex(z1)} 는 복소평면에서 (${roundClean(z1.a)}, ${roundClean(z1.b)})에 해당합니다. 즉, 복소수는 '이상한 문자식'이 아니라 좌표처럼 볼 수 있습니다. 가로로 ${roundClean(z1.a)}만큼, 세로로 ${roundClean(z1.b)}만큼 이동한 점이라고 생각하면 됩니다.`;
+    } else if (mode === 'add') {
+      const sum = add(z1, z2);
+      els.resultBox.innerHTML = `
+        <strong>덧셈 결과</strong><br>
+        (${fmtComplex(z1)}) + (${fmtComplex(z2)}) = <strong>${fmtComplex(sum)}</strong><br>
+        좌표 계산: (${roundClean(z1.a)} + ${roundClean(z2.a)}, ${roundClean(z1.b)} + ${roundClean(z2.b)}) = (${roundClean(sum.a)}, ${roundClean(sum.b)})
+      `;
+      els.explanation.textContent =
+        `복소수의 덧셈은 각 좌표를 따로 더하는 것과 같습니다. 그래서 (${roundClean(z1.a)}, ${roundClean(z1.b)}) + (${roundClean(z2.a)}, ${roundClean(z2.b)}) = (${roundClean(sum.a)}, ${roundClean(sum.b)})가 됩니다. 그림으로 보면 벡터를 이어 붙이는 이동과 거의 같은 모습입니다.`;
+    } else if (mode === 'mul') {
+      const prod = multiply(z1, z2);
+      els.resultBox.innerHTML = `
+        <strong>곱셈 결과</strong><br>
+        (${fmtComplex(z1)}) × (${fmtComplex(z2)}) = <strong>${fmtComplex(prod)}</strong><br>
+        계산식: (${roundClean(z1.a)}×${roundClean(z2.a)} - ${roundClean(z1.b)}×${roundClean(z2.b)}) ${prod.b >=0 ? '+' : '-'} ${Math.abs(roundClean(z1.a*z2.b + z1.b*z2.a))}i
+      `;
+      els.explanation.textContent =
+        `복소수의 곱셈은 덧셈보다 덜 직관적이지만, 평면에서 보면 '길이 변화 + 회전'의 성격을 가집니다. 계산 자체는 (a+bi)(c+di) = (ac-bd) + (ad+bc)i 규칙을 따릅니다. 여기서는 z₁과 z₂를 곱한 결과점이 어디로 가는지 시각적으로 확인할 수 있습니다.`;
+    } else if (mode === 'conj') {
+      const cj = conjugate(z1);
+      els.resultBox.innerHTML = `
+        <strong>켤레복소수</strong><br>
+        z = ${fmtComplex(z1)}<br>
+        z̄ = <strong>${fmtComplex(cj)}</strong>
+      `;
+      els.explanation.textContent =
+        `켤레복소수는 허수부의 부호만 바뀐 수입니다. 그래서 ${fmtComplex(z1)}의 켤레복소수는 ${fmtComplex(cj)}가 됩니다. 그림에서는 x축을 기준으로 위아래가 뒤집힌 대칭점으로 보입니다.`;
+    } else if (mode === 'abs') {
+      const mag = magnitude(z1);
+      els.resultBox.innerHTML = `
+        <strong>절댓값</strong><br>
+        |${fmtComplex(z1)}| = <strong>${roundClean(mag)}</strong><br>
+        √(${roundClean(z1.a)}² + ${roundClean(z1.b)}²) = ${roundClean(mag)}
+      `;
+      els.explanation.textContent =
+        `복소수의 절댓값은 원점에서 그 점까지의 거리입니다. 즉 |a+bi| = √(a²+b²)입니다. 이 값은 복소평면에서 점이 원점으로부터 얼마나 떨어져 있는지를 나타냅니다.`;
+    } else if (mode === 'irot') {
+      const to = multiplyByI(z1);
+      els.resultBox.innerHTML = `
+        <strong>i를 곱한 결과</strong><br>
+        i(${fmtComplex(z1)}) = <strong>${fmtComplex(to)}</strong><br>
+        규칙: (a,b) → (-b,a)
+      `;
+      els.explanation.textContent =
+        `i를 곱하면 복소평면에서 점이 90도 반시계 방향으로 회전합니다. 좌표로 쓰면 (a,b)가 (-b,a)로 바뀝니다. 숫자 계산처럼 보이지만, 그림으로 보면 방향 전환 장치처럼 느껴집니다.`;
+    }
+  }
+
+  function renderCanvas() {
+    drawPlane();
+
+    const z1 = {...state.z1};
+    const z2 = {...state.z2};
+
+    if (state.mode === 'plot') {
+      drawOriginTo(z1, "#7aa2ff");
+      drawPoint(z1, "#8ef0c9", "z");
+    } else if (state.mode === 'add') {
+      const sum = add(z1, z2);
+      drawOriginTo(z1, "#7aa2ff");
+      drawOriginTo(z2, "#ffb36d");
+      drawPoint(z1, "#7aa2ff", "z₁");
+      drawPoint(z2, "#ffb36d", "z₂");
+      drawArrow(z1, sum, "#c98bff");
+      drawPoint(sum, "#8ef0c9", "z₁+z₂", 8);
+    } else if (state.mode === 'mul') {
+      const prod = multiply(z1, z2);
+      drawOriginTo(z1, "#7aa2ff");
+      drawOriginTo(z2, "#ffb36d");
+      drawPoint(z1, "#7aa2ff", "z₁");
+      drawPoint(z2, "#ffb36d", "z₂");
+      drawOriginTo(prod, "#8ef0c9");
+      drawPoint(prod, "#8ef0c9", "z₁×z₂", 8);
+    } else if (state.mode === 'conj') {
+      const cj = conjugate(z1);
+      drawOriginTo(z1, "#7aa2ff");
+      drawOriginTo(cj, "#ff8c8c");
+      drawPoint(z1, "#7aa2ff", "z");
+      drawPoint(cj, "#ff8c8c", "z̄");
+      drawLine(z1, cj, "#c98bff", 2, true);
+    } else if (state.mode === 'abs') {
+      const origin = {a:0,b:0};
+      drawPoint(z1, "#8ef0c9", "z");
+      drawLine(origin, {a:z1.a,b:0}, "#7aa2ff", 2, true);
+      drawLine({a:z1.a,b:0}, z1, "#ffb36d", 2, true);
+      drawOriginTo(z1, "#8ef0c9");
+    } else if (state.mode === 'irot') {
+      if (state.rotationAnimating && state.rotationFrom && state.rotationTo) {
+        const current = {
+          a: interp(state.rotationFrom.a, state.rotationTo.a, state.rotationStart.t),
+          b: interp(state.rotationFrom.b, state.rotationTo.b, state.rotationStart.t)
+        };
+        drawOriginTo(state.rotationFrom, "#7aa2ff");
+        drawPoint(state.rotationFrom, "#7aa2ff", "이전 z");
+        drawOriginTo(state.rotationTo, "rgba(255,179,109,.6)");
+        drawPoint(state.rotationTo, "rgba(255,179,109,.8)", "목표 iz");
+        drawOriginTo(current, "#8ef0c9");
+        drawPoint(current, "#8ef0c9", "회전 중", 8);
+      } else {
+        const to = multiplyByI(z1);
+        drawOriginTo(z1, "#7aa2ff");
+        drawPoint(z1, "#7aa2ff", "z");
+        drawOriginTo(to, "#8ef0c9");
+        drawPoint(to, "#8ef0c9", "iz");
+      }
+    }
+  }
+
+  function updateVisibility() {
+    const twoInputModes = ['add', 'mul'];
+    els.z2Block.style.display = twoInputModes.includes(state.mode) ? 'grid' : 'none';
+  }
+
+  function syncValues() {
+    els.a1v.textContent = state.z1.a;
+    els.b1v.textContent = state.z1.b;
+    els.a2v.textContent = state.z2.a;
+    els.b2v.textContent = state.z2.b;
+    els.a1.value = state.z1.a;
+    els.b1.value = state.z1.b;
+    els.a2.value = state.z2.a;
+    els.b2.value = state.z2.b;
+  }
+
+  function renderAll() {
+    updateVisibility();
+    renderResultAndExplanation();
+    renderCanvas();
+    document.querySelectorAll('.mode-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.mode === state.mode);
+    });
+  }
+
+  function buildModeButtons() {
+    modes.forEach(m => {
+      const btn = document.createElement('button');
+      btn.className = 'mode-btn';
+      btn.textContent = m.label;
+      btn.dataset.mode = m.id;
+      btn.addEventListener('click', () => {
+        state.mode = m.id;
+        state.rotationAnimating = false;
+        renderAll();
+      });
+      els.modeButtons.appendChild(btn);
+    });
+  }
+
+  function startRotation() {
+    if (state.rotationAnimating) return;
+    state.mode = 'irot';
+    const from = {...state.z1};
+    const to = multiplyByI(from);
+    state.rotationAnimating = true;
+    state.rotationFrom = from;
+    state.rotationTo = to;
+    const startTs = performance.now();
+
+    function animate(ts) {
+      const duration = 700;
+      const t = Math.min(1, (ts - startTs) / duration);
+      const eased = 1 - Math.pow(1 - t, 3);
+      state.rotationStart = { t: eased };
+      renderAll();
+      if (t < 1) {
+        requestAnimationFrame(animate);
+      } else {
+        state.rotationAnimating = false;
+        state.z1 = to;
+        syncValues();
+        renderAll();
+      }
+    }
+    requestAnimationFrame(animate);
+  }
+
+  function bindInputs() {
+    [['a1','a'],['b1','b']].forEach(([id,key]) => {
+      els[id].addEventListener('input', e => {
+        state.z1[key] = Number(e.target.value);
+        syncValues();
+        if (state.rotationAnimating) state.rotationAnimating = false;
+        renderAll();
+      });
+    });
+
+    [['a2','a'],['b2','b']].forEach(([id,key]) => {
+      els[id].addEventListener('input', e => {
+        state.z2[key] = Number(e.target.value);
+        syncValues();
+        renderAll();
+      });
+    });
+
+    els.applyBtn.addEventListener('click', () => {
+      state.rotationAnimating = false;
+      renderAll();
+    });
+
+    els.rotateBtn.addEventListener('click', startRotation);
+
+    els.resetBtn.addEventListener('click', () => {
+      state.mode = 'plot';
+      state.z1 = { a: 2, b: 3 };
+      state.z2 = { a: 1, b: 2 };
+      state.rotationAnimating = false;
+      syncValues();
+      renderAll();
+    });
+  }
+
+  buildModeButtons();
+  bindInputs();
+  syncValues();
+  renderAll();
+})();
+</script>
+</body>
+</html>
