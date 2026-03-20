@@ -113,6 +113,9 @@
   }
   .canvas-card{
     padding:14px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
   }
   .canvas-top{
     display:flex;
@@ -127,7 +130,8 @@
     font-size:.95rem;
   }
   canvas{
-    width:100%;
+    width:min(100%, 620px);
+    aspect-ratio:1 / 1;
     height:auto;
     display:block;
     background:
@@ -136,6 +140,7 @@
       linear-gradient(180deg, #121731, #0d1226);
     border-radius:16px;
     border:1px solid rgba(255,255,255,.08);
+    margin:0 auto;
   }
   .panel{
     padding:14px;
@@ -276,7 +281,7 @@
         </div>
         <div class="canvas-meta">표시 범위: 실수/허수축 -10 ~ 10</div>
       </div>
-      <canvas id="plane" width="860" height="620" aria-label="복소평면"></canvas>
+      <canvas id="plane" width="700" height="700" aria-label="복소평면"></canvas>
     </div>
 
     <div class="card panel">
@@ -455,7 +460,7 @@
 
     // grid
     ctx.lineWidth = 1;
-    ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--grid').trim();
+    ctx.strokeStyle = "rgba(95, 115, 201, 0.18)";
 
     for (let i = min; i <= max; i++) {
       const p1 = toCanvas(i, min);
@@ -474,8 +479,8 @@
     }
 
     // axes
-    ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--axis').trim();
-    ctx.lineWidth = 2.2;
+    ctx.strokeStyle = "rgba(201, 212, 255, 0.42)";
+    ctx.lineWidth = 1.8;
     const x1 = toCanvas(min, 0), x2 = toCanvas(max, 0);
     const y1 = toCanvas(0, min), y2 = toCanvas(0, max);
 
@@ -483,19 +488,20 @@
     ctx.beginPath(); ctx.moveTo(y1.x, y1.y); ctx.lineTo(y2.x, y2.y); ctx.stroke();
 
     // axis labels/ticks
-    ctx.fillStyle = "#dfe6ff";
-    ctx.font = "14px sans-serif";
+    ctx.fillStyle = "rgba(223, 230, 255, 0.45)";
+    ctx.font = "12px sans-serif";
     for (let i = min; i <= max; i++) {
       const p = toCanvas(i, 0);
       const q = toCanvas(0, i);
       if (i !== 0) {
-        ctx.fillText(String(i), p.x - 5, p.y + 20);
-        ctx.fillText(String(i), q.x + 10, q.y + 5);
+        ctx.fillText(String(i), p.x - 5, p.y + 18);
+        ctx.fillText(String(i), q.x + 8, q.y + 4);
       }
     }
-    ctx.fillText("실수축", x2.x - 45, x2.y - 12);
-    ctx.fillText("허수축", y2.x + 12, y2.y + 16);
-    ctx.fillText("O", toCanvas(0,0).x + 8, toCanvas(0,0).y - 8);
+    ctx.fillStyle = "rgba(223, 230, 255, 0.5)";
+    ctx.fillText("실수축", x2.x - 42, x2.y - 10);
+    ctx.fillText("허수축", y2.x + 10, y2.y + 14);
+    ctx.fillText("O", toCanvas(0,0).x + 7, toCanvas(0,0).y - 7);
   }
 
   function drawProjection(z, color="#7893ff") {
